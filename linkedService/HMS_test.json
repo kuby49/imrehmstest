@@ -1,0 +1,16 @@
+{
+	"name": "HMS_test",
+	"type": "Microsoft.Synapse/workspaces/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": "integrated security=False;encrypt=True;connection timeout=30;data source=imreserver.database.windows.net;initial catalog=imrehivemetastore;user id=sqladmin",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIlNZTkFQU0VAQzc2MzBFRDYtNDA0RS00M0FFLUJBNEEtNTcxNDUyRjM3OTJDXzAyZWZhMjE2LWVhNTYtNGM5ZC04MzIzLTRhYjM3OWQ3MzBhMCINCn0="
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
