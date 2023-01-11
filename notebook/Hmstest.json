@@ -13,19 +13,16 @@
 			"executorMemory": "56g",
 			"executorCores": 8,
 			"numExecutors": 2,
-			"runAsWorkspaceSystemIdentity": false,
+			"runAsWorkspaceSystemIdentity": true,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "35b83dbe-c7ff-49c1-a82f-b58acc4be2ee"
+				"spark.autotune.trackingId": "150b43fe-87f2-4e1e-a8d6-bea27dff934e"
 			}
 		},
 		"metadata": {
 			"saveOutput": true,
-			"synapse_widget": {
-				"version": "0.1"
-			},
 			"enableDebugMode": false,
 			"kernelspec": {
 				"name": "synapse_pyspark",
@@ -41,14 +38,13 @@
 				"endpoint": "https://imrehmstest.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/hmstest",
 				"auth": {
 					"type": "AAD",
-					"authResource": "https://dev.azuresynapse.net",
-					"authHeader": null
+					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.2",
 				"nodeCount": 10,
 				"cores": 8,
 				"memory": 56,
-				"extraHeader": null
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -71,6 +67,7 @@
 					"        \"spark.hadoop.hive.security.metastore.authorization.manager\" : \"org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider\",\r\n",
 					"        \"spark.hadoop.security.metastore.authorization.manager\" : \"org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider\",\r\n",
 					"        \"spark.sql.hive.security.metastore.authorization.manager\" : \"org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider\"\r\n",
+					"        \r\n",
 					"    }\r\n",
 					"}\r\n",
 					""
@@ -101,7 +98,7 @@
 					"}\r\n",
 					""
 				],
-				"execution_count": 6
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
@@ -171,7 +168,8 @@
 					"    USING Parquet\r\n",
 					"--    LOCATION \"abfss://asadatalakeimre.dfs.core.windows.net/imrehdihive40/myparquettable\"\r\n",
 					"    LOCATION \"abfss://tempdata@asadatalakeimre.dfs.core.windows.net/synapse/workspaces/asaworkspaceimre/warehouse/mytestdb.db/myparquettable\""
-				]
+				],
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -191,7 +189,8 @@
 					"\r\n",
 					"spark_context=spark.sparkContext.getConf()\r\n",
 					"print(spark_context.toDebugString())"
-				]
+				],
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -212,7 +211,8 @@
 					"\r\n",
 					"spark_context=spark.conf.getAll();\r\n",
 					"print(spark_context.toDebugString());"
-				]
+				],
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -389,9 +389,9 @@
 				"source": [
 					"%%sql\r\n",
 					"\r\n",
-					"DROP TABLE mytestdb.myparquettable;"
+					"DROP TABLE my_asa_parquettable;"
 				],
-				"execution_count": 8
+				"execution_count": 2
 			}
 		]
 	}
