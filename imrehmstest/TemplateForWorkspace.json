@@ -1,0 +1,561 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "imrehmstest"
+		},
+		"HMS_test_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'HMS_test'"
+		},
+		"imrehmstest-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'imrehmstest-WorkspaceDefaultSqlServer'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:imrehmstest.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"imrehmstest-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://asadatalakeimre.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/HMS_test')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('HMS_test_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/imrehmstest-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('imrehmstest-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/imrehmstest-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('imrehmstest-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Hmstest')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "hmstest",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "56g",
+					"driverCores": 8,
+					"executorMemory": "56g",
+					"executorCores": 8,
+					"numExecutors": 2,
+					"runAsWorkspaceSystemIdentity": true,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "44e1516a-b3e8-4281-90d3-e0b99c0ba6f0"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/fe5aef09-bf0f-4faf-9c28-311200cf35cd/resourceGroups/Synapse-WS-L400/providers/Microsoft.Synapse/workspaces/imrehmstest/bigDataPools/hmstest",
+						"name": "hmstest",
+						"type": "Spark",
+						"endpoint": "https://imrehmstest.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/hmstest",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 10,
+						"cores": 8,
+						"memory": 56,
+						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"%%configure -f\r\n",
+							"{\r\n",
+							"    \"conf\":{\r\n",
+							"        \"spark.sql.hive.metastore.version\":\"3.1\",\r\n",
+							"        \"spark.hadoop.hive.synapse.externalmetastore.linkedservice.name\":\"HMS_test\",\r\n",
+							"        \"spark.sql.hive.metastore.jars\":\"/opt/hive-metastore/lib-3.1/*:/usr/hdp/current/hadoop-client/lib/*\",\r\n",
+							"        \"spark.hadoop.metastore.authorization.storage.checks\": \"true\",\r\n",
+							"        \"spark.hadoop.hive.metastore.authorization.storage.checks\": \"true\",\r\n",
+							"        \"spark.sql.hive.metastore.authorization.storage.checks\": \"true\",\r\n",
+							"        \"spark.hadoop.hive.metastore.pre.event.listeners\" : \"org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener\",\r\n",
+							"        \"spark.hadoop.metastore.pre.event.listeners\" : \"org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener\",\r\n",
+							"        \"spark.sql.hive.metastore.pre.event.listeners\" : \"org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener\",\r\n",
+							"        \"spark.hadoop.hive.security.metastore.authorization.manager\" : \"org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider\",\r\n",
+							"        \"spark.hadoop.security.metastore.authorization.manager\" : \"org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider\",\r\n",
+							"        \"spark.sql.hive.security.metastore.authorization.manager\" : \"org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider\"\r\n",
+							"        \r\n",
+							"    }\r\n",
+							"}\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 16
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"%%configure -f\r\n",
+							"{\r\n",
+							"    \"conf\":{\r\n",
+							"        \"spark.sql.hive.metastore.version\":\"3.1\",\r\n",
+							"        \"spark.hadoop.hive.synapse.externalmetastore.linkedservice.name\":\"HMS_test\",\r\n",
+							"        \"spark.sql.hive.metastore.jars\":\"/opt/hive-metastore/lib-3.1/*:/usr/hdp/current/hadoop-client/lib/*\",\r\n",
+							"    }\r\n",
+							"}\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 1
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"spark.sql(\"show databases\").show()"
+						],
+						"outputs": [],
+						"execution_count": 26
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "sparksql"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%sql\r\n",
+							"\r\n",
+							"CREATE TABLE myexternalparquettable2 (id int, name string, birthdate date) \r\n",
+							"    USING Parquet\r\n",
+							"--    LOCATION \"abfss://asadatalakeimre.dfs.core.windows.net/imrehdihive40/myparquettable\"\r\n",
+							"    LOCATION \"abfss://tempdata@asadatalakeimre.dfs.core.windows.net/synapse/workspaces/asaworkspaceimre/warehouse/mytestdb.db/myparquettable\""
+						],
+						"outputs": [],
+						"execution_count": 27
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "sparksql"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%sql\r\n",
+							"CREATE TABLE myexternalparquettable3 (id int, name string, birthdate date) \r\n",
+							"    USING Parquet\r\n",
+							"--    LOCATION \"abfss://asadatalakeimre.dfs.core.windows.net/imrehdihive40/myparquettable\"\r\n",
+							"    LOCATION \"abfss://tempdata@asadatalakeimre.dfs.core.windows.net/synapse/workspaces/asaworkspaceimre/warehouse/mytestdb.db/myparquettable\""
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql import SparkSession\r\n",
+							"\r\n",
+							"spark_context=spark.sparkContext.getConf()\r\n",
+							"print(spark_context.toDebugString())"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql import HiveContext;\r\n",
+							"\r\n",
+							"\r\n",
+							"spark_context=spark.conf.getAll();\r\n",
+							"print(spark_context.toDebugString());"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "sparksql"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%sql\r\n",
+							"CREATE EXTERNAL TABLE myexternalparquettable5 (id int, name string, birthdate date) \r\n",
+							"    USING Parquet\r\n",
+							"--    LOCATION \"abfss://asadatalakeimre.dfs.core.windows.net/imrehdihive40/myparquettable\"\r\n",
+							"    LOCATION \"abfss://wwi-02@asadatalakeimre.dfs.core.windows.net/mytestdb.db/myparquettable5\""
+						],
+						"outputs": [],
+						"execution_count": 28
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "sparksql"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%sql\r\n",
+							"CREATE EXTERNAL TABLE myexternalparquettable6 (id int, name string, birthdate date) \r\n",
+							"    USING Parquet\r\n",
+							"--    LOCATION \"abfss://asadatalakeimre.dfs.core.windows.net/imrehdihive40/myparquettable\"\r\n",
+							"    LOCATION \"abfss://wwi-02@asadatalakeimre.dfs.core.windows.net/mytestdb.db/myparquettable6\""
+						],
+						"outputs": [],
+						"execution_count": 29
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "sparksql"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%sql\r\n",
+							"\r\n",
+							"USE DEFAULT;\r\n",
+							"SHOW TABLES;"
+						],
+						"outputs": [],
+						"execution_count": 18
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "sparksql"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%sql\r\n",
+							"\r\n",
+							"-- Create external table as MSI imrehmstest\r\n",
+							"CREATE EXTERNAL TABLE myparquettable9 (id int, name string, birthdate date) \r\n",
+							"--    USING Parquet\r\n",
+							"--    LOCATION \"abfss://asadatalakeimre.dfs.core.windows.net/imrehdihive40/myparquettable\"\r\n",
+							"    LOCATION \"abfss://wwi-02@asadatalakeimre.dfs.core.windows.net/mytestdb.db/myparquettable9\"\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 22
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "sparksql"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%sql \r\n",
+							"\r\n",
+							"\r\n",
+							"DROP table myparquettable9;"
+						],
+						"outputs": [],
+						"execution_count": 25
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "sparksql"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%sql\r\n",
+							"\r\n",
+							"SELECT * FROM mytestdb.myparquettable;"
+						],
+						"outputs": [],
+						"execution_count": 7
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "sparksql"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%sql\r\n",
+							"\r\n",
+							"DROP TABLE my_asa_parquettable;"
+						],
+						"outputs": [],
+						"execution_count": 2
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/hmstest')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"autoPause": {
+					"enabled": true,
+					"delayInMinutes": 15
+				},
+				"autoScale": {
+					"enabled": true,
+					"maxNodeCount": 10,
+					"minNodeCount": 3
+				},
+				"nodeCount": 10,
+				"nodeSize": "Medium",
+				"nodeSizeFamily": "MemoryOptimized",
+				"sparkVersion": "3.2",
+				"isComputeIsolationEnabled": false,
+				"sessionLevelPackagesEnabled": false,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "eastus"
+		}
+	]
+}
